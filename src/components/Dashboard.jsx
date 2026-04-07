@@ -8,7 +8,7 @@ import ImpressionsClicksChart from './charts/ImpressionsClicksChart'
 import CPLChart from './charts/CPLChart'
 
 export default function Dashboard() {
-  const [rangeDays, setRangeDays] = useState(30)
+  const [rangeDays, setRangeDays] = useState(14)
   const { data, loading, error } = useDashboardData(rangeDays)
   const { dark, toggle } = useTheme()
   const c = themeColors(dark)
