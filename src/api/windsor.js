@@ -10,7 +10,7 @@ export async function fetchWindsorData(startDate, endDate) {
   const params = new URLSearchParams({
     api_key: API_KEY,
     date_preset: `last_${days}dT`,
-    fields: 'source,campaign,date,spend,impressions,link_clicks,actions_ockno_ctme_agent_1_qualified_lead',
+    fields: 'source,campaign,date,spend,impressions,link_clicks',
     _renderer: 'json',
   })
 
@@ -30,12 +30,11 @@ function normalizeWindsorData(rows) {
     const date = row.date
     if (!date) continue
     if (!byDate[date]) {
-      byDate[date] = { date, spend: 0, impressions: 0, linkClicks: 0, leads: 0 }
+      byDate[date] = { date, spend: 0, impressions: 0, linkClicks: 0 }
     }
     byDate[date].spend += Number(row.spend) || 0
     byDate[date].impressions += Number(row.impressions) || 0
     byDate[date].linkClicks += Number(row.link_clicks) || 0
-    byDate[date].leads += Number(row.actions_ockno_ctme_agent_1_qualified_lead) || 0
   }
 
   return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date))

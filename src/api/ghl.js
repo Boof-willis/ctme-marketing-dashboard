@@ -18,7 +18,7 @@ const headers = {
   'Content-Type': 'application/json',
 }
 
-export async function fetchPipelineData(startDate, endDate) {
+async function fetchAllOpportunities() {
   const opportunities = []
   let hasMore = true
   let startAfterId = ''
@@ -45,7 +45,29 @@ export async function fetchPipelineData(startDate, endDate) {
     }
   }
 
-  const booked = opportunities.filter((o) => {
+  return opportunities
+}
+
+export async function fetchPipelineData(startDate, endDate) {
+  const opportunities = await fetchAllOpportunities()
+
+  // Dedup by contactId - keep only the earliest opportunity per contact
+  const seenContacts = new Map()
+  for (const o of opportunities) {
+    const cid = o.contactId || o.contact?.id
+    if (!cid) continue
+    const existing = seenContacts.get(cid)
+    if (!existing || (o.createdAt || '') < (existing.createdAt || '')) {
+      seenContacts.set(cid, o)
+    }
+  }
+  const uniqueOpps = [...seenContacts.values()]
+
+  // Total leads: all unique contacts with Booking App source (any status, any pipeline)
+  const leads = uniqueOpps.filter((o) => o.source === 'Booking App')
+
+  // Booked calls: cold booked + downstream stages with Booking App source
+  const booked = uniqueOpps.filter((o) => {
     const stageId = o.pipelineStageId
     const source = o.source || ''
     if (stageId === WARM_BOOKED || stageId === NEW_LEAD) return false
@@ -53,13 +75,16 @@ export async function fetchPipelineData(startDate, endDate) {
     return source === 'Booking App'
   })
 
-  const coldBooked = opportunities.filter((o) => o.pipelineStageId === COLD_BOOKED)
+  // Cold booked specifically
+  const coldBooked = uniqueOpps.filter((o) => o.pipelineStageId === COLD_BOOKED)
 
-  const qualified = opportunities.filter((o) =>
+  // Qualified
+  const qualified = uniqueOpps.filter((o) =>
     o.pipelineStageId === CALL_COMPLETED_QUALIFIED && o.source === 'Booking App'
   )
 
   return {
+    leads: normalizeByDate(leads, startDate, endDate, 'leads'),
     bookedCalls: normalizeByDate(booked, startDate, endDate, 'bookedCalls'),
     coldBooked: normalizeByDate(coldBooked, startDate, endDate, 'coldBooked'),
     qualified: normalizeByDate(qualified, startDate, endDate, 'qualified'),

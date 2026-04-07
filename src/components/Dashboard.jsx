@@ -75,12 +75,12 @@ export default function Dashboard() {
             <KPICard label="Total Spend" value={data.kpis.totalSpend} format="currency" colors={c} />
             <KPICard label="Avg Daily Spend" value={data.kpis.avgDailySpend} format="currency" colors={c} />
             <KPICard label="Total Leads" value={data.kpis.totalLeads} colors={c} />
+            <KPICard label="Total Calls Booked" value={data.kpis.totalBookedCalls} colors={c} />
             <KPICard label="Cost Per Lead" value={data.kpis.cpl} format="currency" colors={c} />
             <KPICard label="Cost Per Booked Call" value={data.kpis.cpbc} format="currency" colors={c} />
             <KPICard label="TOF > MOF %" value={data.kpis.tofToMof} format="percent" colors={c} />
             <KPICard label="MOF > BOF %" value={data.kpis.mofToBof} format="percent" colors={c} />
-            <KPICard label="7-Day Avg Booked Calls" value={data.kpis.rolling7} format="decimal" colors={c} />
-            <KPICard label="30-Day Avg Booked Calls" value={data.kpis.rolling30} format="decimal" colors={c} />
+            <KPICard label="Avg Daily Booked Calls" value={data.kpis.avgDailyBookedCalls} format="decimal" colors={c} />
           </div>
 
           {/* Charts */}

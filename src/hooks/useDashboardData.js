@@ -3,12 +3,6 @@ import { subDays, eachDayOfInterval, format } from 'date-fns'
 import { fetchWindsorData } from '../api/windsor'
 import { fetchPipelineData } from '../api/ghl'
 
-function calculateRollingAverage(data, field, windowDays) {
-  if (data.length === 0) return 0
-  const slice = data.slice(-windowDays)
-  const sum = slice.reduce((acc, d) => acc + (d[field] || 0), 0)
-  return sum / Math.min(slice.length, windowDays)
-}
 
 export function useDashboardData(rangeDays = 30) {
   const [data, setData] = useState(null)
@@ -36,6 +30,9 @@ export function useDashboardData(rangeDays = 30) {
       for (const row of windsorData) {
         dateMap[row.date] = { ...dateMap[row.date], ...row }
       }
+      for (const row of pipelineData.leads) {
+        dateMap[row.date] = { ...dateMap[row.date], ...row }
+      }
       for (const row of pipelineData.bookedCalls) {
         dateMap[row.date] = { ...dateMap[row.date], ...row }
       }
@@ -61,7 +58,8 @@ export function useDashboardData(rangeDays = 30) {
         .sort((a, b) => a.date.localeCompare(b.date))
 
       const totalSpend = daily.reduce((s, d) => s + d.spend, 0)
-      const avgDailySpend = daily.length > 0 ? totalSpend / daily.length : 0
+      const daysWithSpend = daily.filter((d) => d.spend > 0).length
+      const avgDailySpend = daysWithSpend > 0 ? totalSpend / daysWithSpend : 0
       const totalLeads = daily.reduce((s, d) => s + d.leads, 0)
       const cpl = totalLeads > 0 ? totalSpend / totalLeads : 0
       const totalBookedCalls = daily.reduce((s, d) => s + d.bookedCalls, 0)
@@ -74,12 +72,11 @@ export function useDashboardData(rangeDays = 30) {
       const mofToBof = totalColdBooked > 0
         ? (totalQualified / totalColdBooked) * 100
         : 0
-      const rolling7 = calculateRollingAverage(daily, 'bookedCalls', 7)
-      const rolling30 = calculateRollingAverage(daily, 'bookedCalls', 30)
+      const avgDailyBookedCalls = daysWithSpend > 0 ? totalBookedCalls / daysWithSpend : 0
 
       setData({
         daily,
-        kpis: { totalSpend, avgDailySpend, totalLeads, cpl, cpbc, tofToMof, mofToBof, rolling7, rolling30 },
+        kpis: { totalSpend, avgDailySpend, totalLeads, totalBookedCalls, cpl, cpbc, tofToMof, mofToBof, avgDailyBookedCalls },
       })
     } catch (err) {
       console.error('Dashboard data error:', err)
