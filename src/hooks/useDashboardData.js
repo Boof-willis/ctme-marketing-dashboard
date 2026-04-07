@@ -66,11 +66,11 @@ export function useDashboardData(rangeDays = 30) {
       const totalColdBooked = daily.reduce((s, d) => s + d.coldBooked, 0)
       const cpbc = totalBookedCalls > 0 ? totalSpend / totalBookedCalls : 0
       const tofToMof = totalLeads > 0
-        ? (totalColdBooked / totalLeads) * 100
+        ? (totalBookedCalls / totalLeads) * 100
         : 0
       const totalQualified = daily.reduce((s, d) => s + d.qualified, 0)
-      const mofToBof = totalColdBooked > 0
-        ? (totalQualified / totalColdBooked) * 100
+      const mofToBof = totalBookedCalls > 0
+        ? (totalQualified / totalBookedCalls) * 100
         : 0
       const avgDailyBookedCalls = daysWithSpend > 0 ? totalBookedCalls / daysWithSpend : 0
 
